@@ -9,6 +9,7 @@ import (
 	"time"
 )
 
+// TODO: Add this to a .env file
 const version = "1.0.0"
 
 type config struct {
