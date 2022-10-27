@@ -2,7 +2,9 @@ package main
 
 import (
 	"fmt"
+	"github.com/rlr524/greenlight/internal/data"
 	"net/http"
+	"time"
 )
 
 // The createMovieHandler will handle POST actions to the /v1/movies endpoint.
@@ -20,6 +22,20 @@ func (app *Application) showMovieHandler(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	// Otherwise, interpolate the movie ID in a placeholder response.
-	fmt.Fprintf(w, "Show the details of movie %d\n", id)
+	// A new instance of the Movie struct, containing the ID that was extracted from the URL.
+	movie := data.Movie{
+		ID:        id,
+		CreatedAt: time.Now(),
+		Title:     "Casablanca",
+		Runtime:   102,
+		Genres:    []string{"drama", "romance", "war"},
+		Version:   1,
+	}
+
+	// Encode the movie struct instance to JSON and send it to the HTTP response
+	err = app.writeJSON(w, http.StatusOK, movie, nil)
+	if err != nil {
+		app.logger.Print(err)
+		http.Error(w, "The server encountered a problem and could not process your request", http.StatusInternalServerError)
+	}
 }
