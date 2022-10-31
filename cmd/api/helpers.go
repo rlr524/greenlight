@@ -21,9 +21,14 @@ func (app *Application) readIDParam(r *http.Request) (int64, error) {
 	return id, nil
 }
 
-func (app *Application) writeJSON(w http.ResponseWriter, status int, data any, headers http.Header) error {
-	// Encode the data to JSON, returning an error if there was one
-	js, err := json.Marshal(data)
+// Envelope for JSON data
+type envelope map[string]any
+
+func (app *Application) writeJSON(w http.ResponseWriter, status int, data envelope, headers http.Header) error {
+	// Encode the data to JSON, returning an error if there was one. Use the MarshalIndent function
+	// so that whitespace is added to the encoded JSON to make reading easier in plain interfaces such
+	// as CURL.
+	js, err := json.MarshalIndent(data, "", "\t")
 	if err != nil {
 		return err
 	}

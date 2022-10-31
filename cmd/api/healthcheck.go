@@ -35,15 +35,19 @@ func (app *Application) healthcheckHandler(w http.ResponseWriter, r *http.Reques
 	if e != nil {
 		panic(e)
 	}
-	// A map that holds the information to return to the healthcheck
-	data := map[string]string{
-		"status":      "available",
-		"fqdn":        host,
-		"environment": app.config.env,
-		"version":     version,
+	// A map that holds the information to return to the healthcheck, contained in an envelope as
+	// defined in the writeJSON helper.
+
+	envelope := envelope{
+		"status": "available",
+		"system_info": map[string]string{
+			"fqdn":        host,
+			"environment": app.config.env,
+			"version":     version,
+		},
 	}
 
-	err := app.writeJSON(w, http.StatusOK, data, nil)
+	err := app.writeJSON(w, http.StatusOK, envelope, nil)
 	if err != nil {
 		app.logger.Print(err)
 		http.Error(w,
