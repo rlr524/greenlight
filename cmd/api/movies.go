@@ -8,8 +8,11 @@ import (
 )
 
 // The createMovieHandler will handle POST actions to the /v1/movies endpoint.
-func (app *Application) createMovieHandler(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintln(w, "Create a new movie...")
+func (app *Application) createMovieHandler(w http.ResponseWriter, _ *http.Request) {
+	_, err := fmt.Fprintln(w, "Create a new movie...")
+	if err != nil {
+		panic(err)
+	}
 }
 
 // The showMovieHandler will handle GET actions to the /v1/movies endpoint using an id parameter.

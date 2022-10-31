@@ -29,15 +29,15 @@ import (
 
 // Refactoring the healthcheck handler to use a map of the healthcheck data and the writeJSON helper
 // function which uses the json.Marshal function to return Go native objects as JSON text
-func (app *Application) healthcheckHandler(w http.ResponseWriter, r *http.Request) {
+func (app *Application) healthcheckHandler(w http.ResponseWriter, _ *http.Request) {
 	// Get the host name
 	host, e := os.Hostname()
 	if e != nil {
 		panic(e)
 	}
+
 	// A map that holds the information to return to the healthcheck, contained in an envelope as
 	// defined in the writeJSON helper.
-
 	envelope := envelope{
 		"status": "available",
 		"system_info": map[string]string{
