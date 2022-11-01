@@ -21,7 +21,7 @@ func (app *Application) showMovieHandler(w http.ResponseWriter, r *http.Request)
 	// If there is an error, send a 404 and return out of the function.
 	id, err := app.readIDParam(r)
 	if err != nil || id < 1 {
-		http.NotFound(w, r)
+		app.notFoundResponse(w, r)
 		return
 	}
 
@@ -38,7 +38,6 @@ func (app *Application) showMovieHandler(w http.ResponseWriter, r *http.Request)
 	// Encode the movie struct instance to JSON and send it to the HTTP response
 	err = app.writeJSON(w, http.StatusOK, envelope{"movie": movie}, nil)
 	if err != nil {
-		app.logger.Print(err)
-		http.Error(w, "The server encountered a problem and could not process your request", http.StatusInternalServerError)
+		app.serverErrorResponse(w, r, err)
 	}
 }

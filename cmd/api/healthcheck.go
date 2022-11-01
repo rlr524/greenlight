@@ -29,7 +29,7 @@ import (
 
 // Refactoring the healthcheck handler to use a map of the healthcheck data and the writeJSON helper
 // function which uses the json.Marshal function to return Go native objects as JSON text
-func (app *Application) healthcheckHandler(w http.ResponseWriter, _ *http.Request) {
+func (app *Application) healthcheckHandler(w http.ResponseWriter, r *http.Request) {
 	// Get the host name
 	host, e := os.Hostname()
 	if e != nil {
@@ -49,9 +49,6 @@ func (app *Application) healthcheckHandler(w http.ResponseWriter, _ *http.Reques
 
 	err := app.writeJSON(w, http.StatusOK, envelope, nil)
 	if err != nil {
-		app.logger.Print(err)
-		http.Error(w,
-			"The server encountered a problem and could not process your request",
-			http.StatusInternalServerError)
+		app.serverErrorResponse(w, r, err)
 	}
 }
