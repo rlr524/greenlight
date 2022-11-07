@@ -8,10 +8,29 @@ import (
 )
 
 // The createMovieHandler will handle POST actions to the /v1/movies endpoint.
-func (app *Application) createMovieHandler(w http.ResponseWriter, _ *http.Request) {
-	_, err := fmt.Fprintln(w, "Create a new movie...")
+func (app *Application) createMovieHandler(w http.ResponseWriter, r *http.Request) {
+	// Anonymous struct to hold the information that is expected to be in the HTTp request body. This is
+	// the target decode destination. This struct is not being used outside this handler and is not exported, however
+	// the fields themselves need to be exported to be available to the encoding/json package.
+	var input struct {
+		Title   string   `json:"title"`
+		Year    int32    `json:"year"`
+		Runtime int32    `json:"runtime"`
+		Genres  []string `json:"genres"`
+	}
+
+	// Use the readJSON() helper to decode the request body into the input struct. If this returns an
+	// error, send the client an error message along with a 400 status code.
+	err := app.readJSON(w, r, &input)
 	if err != nil {
-		panic(err)
+		app.badRequestResponse(w, r, err)
+		return
+	}
+
+	// Dump the contents of the input struct in an HTTP response.
+	_, e := fmt.Fprintf(w, "%+v\n", input)
+	if e != nil {
+		return
 	}
 }
 

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"net/http"
 	"os"
 )
@@ -33,7 +34,7 @@ func (app *Application) healthcheckHandler(w http.ResponseWriter, r *http.Reques
 	// Get the host name
 	host, e := os.Hostname()
 	if e != nil {
-		panic(e)
+		fmt.Println("the host name could not be resolved")
 	}
 
 	// A map that holds the information to return to the healthcheck, contained in an envelope as
