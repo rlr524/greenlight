@@ -13,10 +13,10 @@ func (app *Application) createMovieHandler(w http.ResponseWriter, r *http.Reques
 	// the target decode destination. This struct is not being used outside this handler and is not exported, however
 	// the fields themselves need to be exported to be available to the encoding/json package.
 	var input struct {
-		Title   string   `json:"title"`
-		Year    int32    `json:"year"`
-		Runtime int32    `json:"runtime"`
-		Genres  []string `json:"genres"`
+		Title   string       `json:"title"`
+		Year    int32        `json:"year"`
+		Runtime data.Runtime `json:"runtime"`
+		Genres  []string     `json:"genres"`
 	}
 
 	// Use the readJSON() helper to decode the request body into the input struct. If this returns an
