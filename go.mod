@@ -1,5 +1,5 @@
 module github.com/rlr524/greenlight
 
-go 1.21.4
+go 1.22.2
 
 require github.com/julienschmidt/httprouter v1.3.0 // indirect
