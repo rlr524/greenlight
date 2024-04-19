@@ -48,6 +48,8 @@ func main() {
 	logger.Info("starting server", "addr", srv.Addr, "env", cfg.env)
 
 	err := srv.ListenAndServe()
-	logger.Error(err.Error())
-	os.Exit(1)
+	if err != nil {
+		logger.Error(err.Error())
+		os.Exit(1)
+	}
 }
