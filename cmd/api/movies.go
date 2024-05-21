@@ -14,10 +14,10 @@ func (app *application) createMovieHandler(w http.ResponseWriter, r *http.Reques
 	// Declare an anonymous struct to hold the information that is expected to be in the
 	// HTTP request body. This struct is the *target decode destination.
 	var input struct {
-		Title   string   `json:"title"`
-		Year    int32    `json:"year"`
-		Runtime int32    `json:"runtime"`
-		Genres  []string `json:"genres"`
+		Title   string        `json:"title"`
+		Year    int32         `json:"year"`
+		Runtime model.Runtime `json:"runtime"`
+		Genres  []string      `json:"genres"`
 	}
 
 	// Use the readJSON() helper to decode the request body into the input struct. If this
