@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"github.com/rlr524/greenlight/internal/model"
+	"github.com/rlr524/greenlight/internal/validator"
 	"net/http"
 	"time"
 )
@@ -25,6 +26,23 @@ func (app *application) createMovieHandler(w http.ResponseWriter, r *http.Reques
 	err := app.readJSON(w, r, &input)
 	if err != nil {
 		app.badRequestResponse(w, r, err)
+		return
+	}
+
+	movie := &model.Movie{
+		Title:   input.Title,
+		Year:    input.Year,
+		Runtime: input.Runtime,
+		Genres:  input.Genres,
+	}
+
+	// Initialize a new Validator instance
+	v := validator.New()
+
+	// Call the ValidateMovie() function and return a response containing the errors
+	// if any of the checks fail.
+	if model.ValidateMovie(v, movie); !v.Valid() {
+		app.failedValidationResponse(w, r, v.Errors)
 		return
 	}
 

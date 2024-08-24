@@ -54,6 +54,16 @@ func (app *application) methodNotAllowed(w http.ResponseWriter, r *http.Request)
 	app.errorResponse(w, r, http.StatusMethodNotAllowed, message)
 }
 
+// The badRequestResponse method will be used to send a 400 status and JSON response to the client.
 func (app *application) badRequestResponse(w http.ResponseWriter, r *http.Request, err error) {
 	app.errorResponse(w, r, http.StatusBadRequest, err.Error())
+}
+
+// The failedValidationResponse() method  will be used to write the 422 Unprocessable Entity response
+// and the contents of the errors map from the Validator type as JSON response body. Note that the
+// errors parameter has the type map[string]string which is exactly the same as the errors map
+// in the Validator type.
+func (app *application) failedValidationResponse(w http.ResponseWriter, r *http.Request,
+	errors map[string]string) {
+	app.errorResponse(w, r, http.StatusUnprocessableEntity, errors)
 }
