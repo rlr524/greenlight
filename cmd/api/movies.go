@@ -65,8 +65,10 @@ func (app *application) showMovieHandler(w http.ResponseWriter, r *http.Request)
 		CreatedAt: time.Now(),
 		UpdatedAt: time.Now(),
 		Title:     "Casablanca",
+		Year:      1942,
 		Runtime:   102,
 		Genres:    []string{"drama", "romance", "war"},
+		Deleted:   false,
 		Version:   1,
 	}
 
@@ -75,4 +77,8 @@ func (app *application) showMovieHandler(w http.ResponseWriter, r *http.Request)
 		app.logger.Error(err.Error())
 		app.serverErrorResponse(w, r, err)
 	}
+}
+
+func (app *application) getMoviesHandler(w http.ResponseWriter, r *http.Request) {
+	// Some code to come to fetch all movies that aren't status deleted
 }

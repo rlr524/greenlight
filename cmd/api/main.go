@@ -20,7 +20,10 @@ type config struct {
 	port int
 	env  string
 	db   struct {
-		dsn string
+		dsn          string
+		maxOpenConns int
+		maxIdleConns int
+		maxIdleTime  time.Duration
 	}
 }
 
@@ -50,17 +53,34 @@ func main() {
 		"db-dsn",
 		fmt.Sprintf("postgres://%s:%s@localhost/greenlight?sslmode=disable", dbUser, dbPass),
 		"PostgreSQL DSN")
+	flag.IntVar(&cfg.db.maxOpenConns, "db-max-open-conns", 25,
+		"PostgreSQL max open connections")
+	flag.IntVar(&cfg.db.maxIdleConns, "db-max-idle-conns", 25,
+		"PostgreSQL max idle connections")
+	flag.DurationVar(&cfg.db.maxIdleTime, "db-max-idle-time", 15*time.Minute,
+		"PostgreSQL max connection idle time")
 
 	flag.Parse()
 
+	// The DB connection pool is established and if there is an error, it is
+	// logged, and we exit the application with a code 1 immediately.
 	db, err := openDB(cfg)
 	if err != nil {
 		logger.Error(err.Error())
 		os.Exit(1)
 	}
 
+	// Defer a call to db.Close() so that the connection pool is closed before main() exits and
+	// log a message that the connection pool has been successfully established. We use a
+	// lambda to do this so we can handle any errors thrown upon closing the pool. Because
+	// this function is only called upon exit of the main() function, we go ahead and just exit
+	// the app in case of an error with a code 1 which will close any open connections.
 	defer func(db *sql.DB) {
-		_ = db.Close()
+		err := db.Close()
+		if err != nil {
+			logger.Error(err.Error())
+			os.Exit(1)
+		}
 	}(db)
 	logger.Info("database connection pool established")
 
@@ -92,6 +112,10 @@ func openDB(cfg config) (*sql.DB, error) {
 	if err != nil {
 		return nil, err
 	}
+
+	db.SetMaxOpenConns(cfg.db.maxOpenConns)
+	db.SetMaxIdleConns(cfg.db.maxIdleConns)
+	db.SetConnMaxIdleTime(cfg.db.maxIdleTime)
 
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
