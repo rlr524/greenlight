@@ -43,16 +43,14 @@ func main() {
 		os.Exit(1)
 	}
 
-	dbPass := os.Getenv("DB_PASS")
-	dbUser := os.Getenv("DB_USER")
+	//dbPass := os.Getenv("DB_PASS")
+	//dbUser := os.Getenv("DB_USER")
+	dbDSN := os.Getenv("DB_DSN")
 
 	flag.IntVar(&cfg.port, "port", 4000, "API Server port")
 	flag.StringVar(&cfg.env, "env", "development",
 		"Environment (development|staging|production)")
-	flag.StringVar(&cfg.db.dsn,
-		"db-dsn",
-		fmt.Sprintf("postgres://%s:%s@localhost/greenlight?sslmode=disable", dbUser, dbPass),
-		"PostgreSQL DSN")
+	flag.StringVar(&cfg.db.dsn, "db-dsn", dbDSN, "PostgreSQL DSN")
 	flag.IntVar(&cfg.db.maxOpenConns, "db-max-open-conns", 25,
 		"PostgreSQL max open connections")
 	flag.IntVar(&cfg.db.maxIdleConns, "db-max-idle-conns", 25,
