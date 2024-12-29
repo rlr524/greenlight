@@ -5,6 +5,7 @@ import (
 	"flag"
 	"fmt"
 	"github.com/joho/godotenv"
+	"github.com/rlr524/greenlight/internal/dal"
 	"log/slog"
 	"net/http"
 	"os"
@@ -27,8 +28,9 @@ type config struct {
 }
 
 type application struct {
-	config config
-	logger *slog.Logger
+	config           config
+	logger           *slog.Logger
+	dataAccessLayers dal.DataAccessLayers
 }
 
 func main() {
@@ -42,8 +44,6 @@ func main() {
 		os.Exit(1)
 	}
 
-	//dbPass := os.Getenv("DB_PASS")
-	//dbUser := os.Getenv("DB_USER")
 	dbDSN := os.Getenv("DB_DSN")
 
 	flag.IntVar(&cfg.port, "port", 4000, "API Server port")
@@ -82,8 +82,9 @@ func main() {
 	logger.Info("database connection pool established")
 
 	app := &application{
-		config: cfg,
-		logger: logger,
+		config:           cfg,
+		logger:           logger,
+		dataAccessLayers: dal.NewDALs(db),
 	}
 
 	srv := &http.Server{

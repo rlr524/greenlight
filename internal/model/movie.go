@@ -13,7 +13,7 @@ type Movie struct {
 	Year      int32     `json:"year"`
 	Runtime   Runtime   `json:"runtime,omitempty"`
 	Genres    []string  `json:"genres"`
-	Deleted   bool      `json:"deleted"`
+	Deleted   bool      `default:"false" json:"deleted"`
 	Version   int32     `json:"version"`
 }
 
