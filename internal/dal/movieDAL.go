@@ -11,6 +11,7 @@ package dal
 
 import (
 	"database/sql"
+	"errors"
 	"github.com/lib/pq"
 	"github.com/rlr524/greenlight/internal/model"
 )
@@ -41,7 +42,36 @@ func (m MovieDAL) Insert(movie *model.Movie) error {
 }
 
 func (m MovieDAL) Get(id int64) (*model.Movie, error) {
-	return nil, nil
+	if id < 1 {
+		return nil, ErrRecordNotFound
+	}
+
+	query := `
+		SELECT id, created_at, title, year, runtime, genres, version
+		FROM movies
+		WHERE id = $1 AND deleted NOT IN (true)`
+
+	var movie model.Movie
+
+	err := m.DB.QueryRow(query, id).Scan(
+		&movie.ID,
+		&movie.CreatedAt,
+		&movie.Title,
+		&movie.Year,
+		&movie.Runtime,
+		pq.Array(&movie.Genres),
+		&movie.Version,
+	)
+	if err != nil {
+		switch {
+		case errors.Is(err, sql.ErrNoRows):
+			return nil, ErrRecordNotFound
+		default:
+			return nil, err
+		}
+	}
+
+	return &movie, nil
 }
 
 func (m MovieDAL) Update(movie *model.Movie) error {

@@ -1,11 +1,12 @@
 package main
 
 import (
+	"errors"
 	"fmt"
+	"github.com/rlr524/greenlight/internal/dal"
 	"github.com/rlr524/greenlight/internal/model"
 	"github.com/rlr524/greenlight/internal/validator"
 	"net/http"
-	"time"
 )
 
 // createMovieHandler() creates a new movie.
@@ -72,16 +73,15 @@ func (app *application) showMovieHandler(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	movie := model.Movie{
-		ID:        id,
-		CreatedAt: time.Now(),
-		UpdatedAt: time.Now(),
-		Title:     "Casablanca",
-		Year:      1942,
-		Runtime:   102,
-		Genres:    []string{"drama", "romance", "war"},
-		Deleted:   false,
-		Version:   1,
+	movie, err := app.dataAccessLayers.Movies.Get(id)
+	if err != nil {
+		switch {
+		case errors.Is(err, dal.ErrRecordNotFound):
+			app.notFoundResponse(w, r)
+		default:
+			app.serverErrorResponse(w, r, err)
+		}
+		return
 	}
 
 	err = app.writeJSON(w, http.StatusOK, envelope{"movie": movie}, nil)
