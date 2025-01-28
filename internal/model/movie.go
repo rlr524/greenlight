@@ -25,8 +25,8 @@ func ValidateMovie(v *validator.Validator, movie *Movie) {
 	// first line, "check that the title is not equal to the empty string". In the second, "check
 	// that the length of the title is less than or equal to 500 bytes" and so on.
 	v.Check(movie.Title != "", "title", "must be provided")
-	v.Check(len(movie.Title) <= 500, "title", "must not be more than 500 bytes (about "+
-		"500 characters) long")
+	v.Check(len(movie.Title) <= 500, "title",
+		"must not be more than 500 bytes (about 500 characters) long")
 
 	v.Check(movie.Year != 0, "year", "must be provided")
 	v.Check(movie.Year >= 1888, "year", "must be greater than 1888")
@@ -38,6 +38,8 @@ func ValidateMovie(v *validator.Validator, movie *Movie) {
 
 	v.Check(movie.Genres != nil, "genres", "must be provided")
 	v.Check(len(movie.Genres) >= 1, "genres", "must contain at least one genre")
-	v.Check(len(movie.Genres) <= 5, "genres", "must not contain more than five genres")
-	v.Check(validator.Unique(movie.Genres), "genres", "must not contain duplicate values")
+	v.Check(len(movie.Genres) <= 5, "genres",
+		"must not contain more than five genres")
+	v.Check(validator.Unique(movie.Genres), "genres",
+		"must not contain duplicate values")
 }

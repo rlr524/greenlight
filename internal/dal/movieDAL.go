@@ -75,7 +75,31 @@ func (m MovieDAL) Get(id int64) (*model.Movie, error) {
 }
 
 func (m MovieDAL) Update(movie *model.Movie) error {
-	return nil
+	query := `
+		UPDATE movies
+		SET title = $1, year = $2, runtime = $3, genres = $4, version = version + 1
+		WHERE id = $5
+		RETURNING version`
+
+	args := []any{
+		movie.Title,
+		movie.Year,
+		movie.Runtime,
+		pq.Array(movie.Genres),
+		movie.ID,
+	}
+
+	return m.DB.QueryRow(query, args...).Scan(&movie.Version)
+
+	// So what's happening here? Notice the Update method (it's a method because it has a
+	// receiver argument (m MovieDAL) for the MovieDAL type, so it is a method on MovieDAL) takes
+	// a pointer to the Movie struct in the movie.go model file. This is how the data is
+	// initially saved in memory when it's entered in the client. Because it's a pointer to the
+	// movie data, it mutates it in place in memory, it doesn't make a new copy of the movie
+	// data. Once that entry is complete, the query, with its arguments, is committed to the
+	// database by the return statement. The QueryRow function is from the sql package, and it
+	// executes a query on the database that returns a maximum of one row, which in our case
+	// will be the updated version of the movie we just updated.
 }
 
 func (m MovieDAL) Delete(id int64) error {
