@@ -94,7 +94,7 @@ func (app *application) getMovieHandler(w http.ResponseWriter, r *http.Request) 
 // updateMovieHandler updates a single movie in place
 // Method: PUT
 // Endpoint: /v1/movies/:id
-func (app *application) updateMoviesHandler(w http.ResponseWriter, r *http.Request) {
+func (app *application) updateMovieHandler(w http.ResponseWriter, r *http.Request) {
 	id, err := app.readIDParam(r)
 	if err != nil {
 		app.notFoundResponse(w, r)
