@@ -63,10 +63,10 @@ func (app *application) createMovieHandler(w http.ResponseWriter, r *http.Reques
 	}
 }
 
-// showMovieHandler() retrieves the details of a specific movie by its ID.
+// getMovieHandler() retrieves the details of a specific movie by its ID.
 // Method: GET
 // Endpoint: /v1/movies/:id
-func (app *application) showMovieHandler(w http.ResponseWriter, r *http.Request) {
+func (app *application) getMovieHandler(w http.ResponseWriter, r *http.Request) {
 	id, err := app.readIDParam(r)
 	if err != nil {
 		app.notFoundResponse(w, r)
@@ -87,6 +87,68 @@ func (app *application) showMovieHandler(w http.ResponseWriter, r *http.Request)
 	err = app.writeJSON(w, http.StatusOK, envelope{"movie": movie}, nil)
 	if err != nil {
 		app.logger.Error(err.Error())
+		app.serverErrorResponse(w, r, err)
+	}
+}
+
+// updateMovieHandler updates a single movie in place
+// Method: PUT
+// Endpoint: /v1/movies/:id
+func (app *application) updateMoviesHandler(w http.ResponseWriter, r *http.Request) {
+	id, err := app.readIDParam(r)
+	if err != nil {
+		app.notFoundResponse(w, r)
+		return
+	}
+
+	movie, err := app.dataAccessLayers.Movies.Get(id)
+	if err != nil {
+		switch {
+		case errors.Is(err, dal.ErrRecordNotFound):
+			app.notFoundResponse(w, r)
+		default:
+			app.serverErrorResponse(w, r, err)
+		}
+		return
+	}
+
+	var input struct {
+		Title   string        `json:"title"`
+		Year    int32         `json:"year"`
+		Runtime model.Runtime `json:"runtime"`
+		Genres  []string      `json:"genres"`
+	}
+
+	err = app.readJSON(w, r, &input)
+	if err != nil {
+		app.badRequestResponse(w, r, err)
+		return
+	}
+
+	// Copy the values from the request body to the corresponding fields of the movie record.
+	movie.Title = input.Title
+	movie.Year = input.Year
+	movie.Runtime = input.Runtime
+	movie.Genres = input.Genres
+
+	// Run the validator helper on the movie record.
+	v := validator.New()
+
+	if model.ValidateMovie(v, movie); !v.Valid() {
+		app.failedValidationResponse(w, r, v.Errors)
+		return
+	}
+
+	// Pass the updated movie record to the DAL Update method.
+	err = app.dataAccessLayers.Movies.Update(movie)
+	if err != nil {
+		app.serverErrorResponse(w, r, err)
+		return
+	}
+
+	// Write the updated movie record to return in a JSON response.
+	err = app.writeJSON(w, http.StatusOK, envelope{"movie": movie}, nil)
+	if err != nil {
 		app.serverErrorResponse(w, r, err)
 	}
 }
