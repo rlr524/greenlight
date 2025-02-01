@@ -103,5 +103,8 @@ func (m MovieDAL) Update(movie *model.Movie) error {
 }
 
 func (m MovieDAL) Delete(id int64) error {
+	if id < 1 {
+		return ErrRecordNotFound
+	}
 	return nil
 }
