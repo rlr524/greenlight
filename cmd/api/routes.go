@@ -19,6 +19,7 @@ func (app *application) routes() http.Handler {
 	r.HandlerFunc(http.MethodPost, v+"/movies", app.createMovieHandler)
 	r.HandlerFunc(http.MethodGet, v+"/movies/:id", app.getMovieHandler)
 	r.HandlerFunc(http.MethodPut, v+"/movies/:id", app.updateMovieHandler)
+	r.HandlerFunc(http.MethodDelete, v+"/movies/:id", app.deleteMovieHandler)
 
 	return app.recoverPanic(r)
 }

@@ -102,9 +102,31 @@ func (m MovieDAL) Update(movie *model.Movie) error {
 	// will be the updated version of the movie we just updated.
 }
 
+// The Delete function implements the CRUD option for soft deletion of a single movie.
+// TODO: Update this to insert a timestamp instead of just a flag.
 func (m MovieDAL) Delete(id int64) error {
 	if id < 1 {
 		return ErrRecordNotFound
 	}
+
+	query := `
+		UPDATE movies
+		SET deleted = true
+		WHERE id = $1`
+
+	result, err := m.DB.Exec(query, id)
+	if err != nil {
+		return err
+	}
+
+	rowsAffected, err := result.RowsAffected()
+	if err != nil {
+		return err
+	}
+
+	if rowsAffected == 0 {
+		return ErrRecordNotFound
+	}
+
 	return nil
 }
