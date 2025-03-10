@@ -113,10 +113,10 @@ func (app *application) updateMovieHandler(w http.ResponseWriter, r *http.Reques
 	}
 
 	var input struct {
-		Title   string        `json:"title"`
-		Year    int32         `json:"year"`
-		Runtime model.Runtime `json:"runtime"`
-		Genres  []string      `json:"genres"`
+		Title   *string        `json:"title"`
+		Year    *int32         `json:"year"`
+		Runtime *model.Runtime `json:"runtime"`
+		Genres  []string       `json:"genres"`
 	}
 
 	err = app.readJSON(w, r, &input)
@@ -125,11 +125,22 @@ func (app *application) updateMovieHandler(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
-	// Copy the values from the request body to the corresponding fields of the movie record.
-	movie.Title = input.Title
-	movie.Year = input.Year
-	movie.Runtime = input.Runtime
-	movie.Genres = input.Genres
+	// Copy the values from the request body to the corresponding fields of the movie record,
+	// dereferencing the values for title, year, and runtime as we're passing those into the input
+	// struct as pointers so we can only update a movie record if the new input value is not nil,
+	// which allows for partial updates.
+	if input.Title != nil {
+		movie.Title = *input.Title
+	}
+	if input.Year != nil {
+		movie.Year = *input.Year
+	}
+	if input.Runtime != nil {
+		movie.Runtime = *input.Runtime
+	}
+	if input.Genres != nil {
+		movie.Genres = input.Genres
+	}
 
 	// Run the validator helper on the movie record.
 	v := validator.New()
@@ -153,8 +164,26 @@ func (app *application) updateMovieHandler(w http.ResponseWriter, r *http.Reques
 	}
 }
 
-func (app *application) getMoviesHandler() {
-	// Some code to come to fetch all movies that aren't status deleted
+// getMoviesHandler fetches all movies that are not flagged as deleted
+// Method: GET
+// Endpoint: /v1/movies
+func (app *application) getMoviesHandler(w http.ResponseWriter, r *http.Request) {
+	movie, err := app.dataAccessLayers.Movies.GetAll()
+	if err != nil {
+		switch {
+		case errors.Is(err, dal.ErrRecordNotFound):
+			app.notFoundResponse(w, r)
+		default:
+			app.serverErrorResponse(w, r, err)
+		}
+		return
+	}
+
+	err = app.writeJSON(w, http.StatusOK, envelope{"movie": movie}, nil)
+	if err != nil {
+		app.logger.Error(err.Error())
+		app.serverErrorResponse(w, r, err)
+	}
 }
 
 // deleteMovieHandler updates the deleted flag on a single movie to true

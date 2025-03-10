@@ -3,8 +3,8 @@ internal/dal/dal.go
 Created 12/29/24
 Rob Ranf
 rob@emiyaconsulting.com
-- The dal.go file is a wrapper for all data access layer files and can be
-thought of as a data access layer interface that will be implemented by all dal types
+- The dal.go file is a wrapper for all data access layer files and acts in much the same way
+that a
 */
 
 package dal

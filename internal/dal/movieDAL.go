@@ -74,6 +74,35 @@ func (m MovieDAL) Get(id int64) (*model.Movie, error) {
 	return &movie, nil
 }
 
+func (m MovieDAL) GetAll() (*model.Movie, error) {
+	query := `
+		SELECT id, created_at, title, year, runtime, genres, version
+		FROM movies
+		WHERE deleted NOT IN (true)`
+
+	var movie model.Movie
+
+	err := m.DB.QueryRow(query).Scan(
+		&movie.ID,
+		&movie.CreatedAt,
+		&movie.Title,
+		&movie.Year,
+		&movie.Runtime,
+		pq.Array(&movie.Genres),
+		&movie.Version,
+	)
+	if err != nil {
+		switch {
+		case errors.Is(err, sql.ErrNoRows):
+			return nil, ErrRecordNotFound
+		default:
+			return nil, err
+		}
+	}
+
+	return &movie, nil
+}
+
 func (m MovieDAL) Update(movie *model.Movie) error {
 	query := `
 		UPDATE movies
