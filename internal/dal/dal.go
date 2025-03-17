@@ -18,6 +18,7 @@ import (
 // method when looking up a record that doesn't exist in the database.
 var (
 	ErrRecordNotFound = errors.New("record not found")
+	ErrEditConflict   = errors.New("edit conflict")
 )
 
 // The DataAccessLayers struct wraps the MovieDAL and all additional data access layer types.

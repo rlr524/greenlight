@@ -107,7 +107,8 @@ func (m MovieDAL) Update(movie *model.Movie) error {
 	query := `
 		UPDATE movies
 		SET title = $1, year = $2, runtime = $3, genres = $4, version = version + 1
-		WHERE id = $5
+		-- Check the version as a means of optimistic locking
+		WHERE id = $5 AND version = $6
 		RETURNING version`
 
 	args := []any{
@@ -116,9 +117,21 @@ func (m MovieDAL) Update(movie *model.Movie) error {
 		movie.Runtime,
 		pq.Array(movie.Genres),
 		movie.ID,
+		movie.Version,
 	}
 
-	return m.DB.QueryRow(query, args...).Scan(&movie.Version)
+	// If no matching row is found, we know the movie version has changed (or the record has been
+	// deleted) and we return the custom ErrEditConflict error.
+	err := m.DB.QueryRow(query, args...).Scan(&movie.Version)
+	if err != nil {
+		switch {
+		case errors.Is(err, sql.ErrNoRows):
+			return ErrEditConflict
+		default:
+			return err
+		}
+	}
+	return nil
 
 	// So what's happening here? Notice the Update method (it's a method because it has a
 	// receiver argument (m MovieDAL) for the MovieDAL type, so it is a method on MovieDAL) takes
