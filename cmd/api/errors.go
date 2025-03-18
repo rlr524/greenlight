@@ -67,3 +67,10 @@ func (app *application) failedValidationResponse(w http.ResponseWriter, r *http.
 	errors map[string]string) {
 	app.errorResponse(w, r, http.StatusUnprocessableEntity, errors)
 }
+
+// The editConflictResponse() method is used to write the 409 Conflict status in the case of
+// edit conflicts upon database updates.
+func (app *application) editConflictResponse(w http.ResponseWriter, r *http.Request) {
+	message := "unable to update the record due to an edit conflict, please try again"
+	app.errorResponse(w, r, http.StatusConflict, message)
+}

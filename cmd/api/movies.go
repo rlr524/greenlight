@@ -7,6 +7,7 @@ import (
 	"github.com/rlr524/greenlight/internal/model"
 	"github.com/rlr524/greenlight/internal/validator"
 	"net/http"
+	"strconv"
 )
 
 // createMovieHandler() creates a new movie.
@@ -112,6 +113,15 @@ func (app *application) updateMovieHandler(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
+	// If the request contains an explicit X-Expected-Version header, verify that the movie version
+	// in the database matches the expected version specified in the header.
+	if r.Header.Get("X-Expected-Version") != "" {
+		if strconv.Itoa(int(movie.Version)) != r.Header.Get("X-Expected-Version") {
+			app.editConflictResponse(w, r)
+			return
+		}
+	}
+
 	var input struct {
 		Title   *string        `json:"title"`
 		Year    *int32         `json:"year"`
@@ -153,7 +163,12 @@ func (app *application) updateMovieHandler(w http.ResponseWriter, r *http.Reques
 	// Pass the updated movie record to the DAL Update method.
 	err = app.dataAccessLayers.Movies.Update(movie)
 	if err != nil {
-		app.serverErrorResponse(w, r, err)
+		switch {
+		case errors.Is(err, dal.ErrEditConflict):
+			app.editConflictResponse(w, r)
+		default:
+			app.serverErrorResponse(w, r, err)
+		}
 		return
 	}
 
